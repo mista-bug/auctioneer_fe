@@ -1,5 +1,7 @@
 import { Button, Card, Form, Label, Input, Description, FieldError, TextField, Header } from "@heroui/react";
 import { Check } from "@gravity-ui/icons";
+import axios from "axios";
+import { API_URL } from "../config/config";
 
 interface ILoginPage {
 
@@ -7,14 +9,20 @@ interface ILoginPage {
 
 const LoginPage: React.FC<ILoginPage> = () => {
 
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const data: Record<string, string> = {};
         formData.forEach((value, key) => {
             data[key] = value.toString();
         });
-        alert(`Form submitted with: ${JSON.stringify(data, null, 2)}`);
+        
+        try {
+            const response = await axios.post(API_URL + '/user', data);
+            console.log('Success:', response.data);
+        } catch (error) {
+            console.error('Error:', error);
+        }
     };
 
     return (

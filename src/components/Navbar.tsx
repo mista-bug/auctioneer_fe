@@ -10,7 +10,7 @@ const Navbar:React.FC<INavbar> = () => {
     const navigate = useNavigate();
 
     return (
-        <Card className="h-auto w-full flex flex-row items-center justify-between p-2">
+        <Card className="relative h-auto w-full flex flex-row items-center justify-between p-2">
             <Button onClick={() => {navigate('/')}} type="button" variant="ghost">Auctioneer</Button>
             <div className="flex flex-row gap-2">
                 <Button onClick={() => {navigate('/home')}} type="button" variant="ghost">Home</Button>

@@ -1,11 +1,53 @@
 import { Car, PersonFill } from "@gravity-ui/icons";
 import { Avatar, Card, DateField, DateInputGroup, Input, Label, TextField } from "@heroui/react";
+import axios from "axios";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Table from "../components/Table";
+import type { ColumnDef } from "@tanstack/react-table";
 
 interface IProfilePage {
 
 }
 
+interface IUserData {
+    userId: number;
+    id: number;
+    title: string;
+    completed: boolean;
+}
+
 const ProfilePage:React.FC<IProfilePage> = () => {
+
+    const [data, setData] = useState<IUserData[]>([]);
+
+    const getBuys = useCallback(() => {
+        axios.get('https://jsonplaceholder.typicode.com/todos')
+        .then(response => setData(response.data));
+    },[])
+
+    const bidColumns = useMemo<ColumnDef<any>[]>(
+        () => [
+            {
+                accessorKey: 'id',
+                header:'Id',
+                cell: (info) => info.getValue(),
+                // footer: (props) => props.column.id,
+              },
+              {
+                accessorFn: (row) => row.name,
+                id: 'name',
+                cell: (info) => info.getValue(),
+                header: 'Name',
+                // footer: (props) => props.column.id,
+              },
+        ],
+        []
+    )
+
+    useEffect(() => {
+        getBuys();
+    },[])
+
     return (
         <div className="h-full w-full flex flex-row gap-3 p-3">
             <Card className="min-h-full w-1/4 p-3 flex items-center justify-center">
@@ -44,6 +86,7 @@ const ProfilePage:React.FC<IProfilePage> = () => {
                 <Card className="h-full w-full flex flex-row">
                     <div className="h-full w-full">
                         <header className="text-xl">Bids</header>
+                        <Table columns={bidColumns} data={data} />
                     </div>
                     <div className="h-full w-full">
                         <header className="text-xl">Listings</header>

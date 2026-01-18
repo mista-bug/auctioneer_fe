@@ -8,6 +8,8 @@ import LoginPage from './pages/LoginPage.tsx'
 import RegisterPage from './pages/RegisterPage.tsx'
 import HomePage from './pages/HomePage.tsx'
 import ProfilePage from './pages/ProfilePage.tsx'
+import ViewArtworkPage from './pages/ViewArtworkPage.tsx'
+import ViewCollectionPage from './pages/ViewCollectionPage.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -18,6 +20,8 @@ createRoot(document.getElementById('root')!).render(
           <Route path='register' element={<RegisterPage />}></Route>
           <Route path='home' element={<HomePage />}></Route>
           <Route path='profile' element={<ProfilePage />}></Route>
+          <Route path='/artwork/:id' element={<ViewArtworkPage />}></Route>
+          <Route path='/collections/:id' element={<ViewCollectionPage />}></Route>
         </Route>
         <Route path='*' element={<div>404 Error</div>}></Route>
       </Routes>
