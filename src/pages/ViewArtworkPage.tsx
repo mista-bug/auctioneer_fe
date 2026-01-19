@@ -4,10 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { API_URL } from "../config/config";
 import { useParams } from "react-router";
 import type { IArtwork, IBid } from "../types/types";
-import { Card, CardContent, CardHeader, CardTitle, Label, Tabs, TextArea } from "@heroui/react";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label, NumberField, Tabs, TextArea } from "@heroui/react";
 import Table from "../components/Table";
 import type { ColumnDef } from "@tanstack/react-table";
 import BidEntry from "../components/BidEntry";
+import ModalButton from "../components/ModalButton";
+import { TagDollar } from "@gravity-ui/icons";
 
 const ViewArtworkPage: React.FC = () => {
 
@@ -18,6 +20,21 @@ const ViewArtworkPage: React.FC = () => {
         const artworkResponse = await axios.get(API_URL + `/artworks/${param.id}`);
         setArtwork(artworkResponse.data);
     }, []);
+
+    const submitBid = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const data: Record<string, string> = {};
+        formData.forEach((value, key) => {
+            data[key] = value.toString();
+        });
+        
+        try {
+            const response = await axios.post(API_URL + '/bids',data);
+        } catch (error) {
+            console.error('Failed to bid');
+        }
+    }
 
     useEffect(() => {
         getData();
@@ -52,10 +69,28 @@ const ViewArtworkPage: React.FC = () => {
                         </Card.Content>
                         <Card.Content>
                             <Label>Description</Label>
-                            <TextArea className='w-1/2 h-30 p-3' readOnly value={artwork?.description}/>
+                            <TextArea className='w-1/2 h-30 p-3' style={{resize:"none"}} readOnly value={artwork?.description}/>
                         </Card.Content>
                     </section>
-                    <p></p>
+                    <section className="w-1/7 p-3">
+
+                        <ModalButton triggerLabel="Bid" heading="Bid Menu" icon={<TagDollar/>}>
+                            <form onSubmit={submitBid} className="flex flex-col gap-5 items-center">
+
+                                <NumberField className="w-full" step={1000} defaultValue={1000} minValue={1000} name="bid_amount">
+                                    <Label>Amount</Label>
+                                    <NumberField.Group>
+                                        <NumberField.DecrementButton />
+                                        <NumberField.Input className="w-full" />
+                                        <NumberField.IncrementButton />
+                                    </NumberField.Group>
+                                </NumberField>
+
+                                <Button type="submit" className='w-1/2'>Bid</Button>
+
+                            </form>
+                        </ModalButton>
+                    </section>
                 </section>
             </Card>
             <Card className="w-full h-1/2">

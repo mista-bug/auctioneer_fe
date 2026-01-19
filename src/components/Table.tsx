@@ -28,14 +28,15 @@ const Table: React.FC<ITable> = ({ data, columns }) => {
     });
 
     return (
-        <div className="rounded-lg p-5 w-full h-full flex flex-col items-center justify-center">
+        <div className="rounded-lg p-5 w-full h-full flex flex-col justify-between items-center">
             {data.length === 0 ? (
+                //spin
                 <div className="flex flex-col items-center justify-center gap-3 p-8 w-full h-full">
                     <div className="w-20 h-20 border-4 border-neutral-600 border-t-neutral-300 rounded-full animate-spin"></div>
                 </div>
             ) : (
                 <>
-                    <table className="w-full h-full rounded-lg bg-background-quaternary">
+                    <table className="w-full rounded-lg bg-background-quaternary">
                         <thead>
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <tr className="border-b border-neutral-600" key={headerGroup.id}>
@@ -69,7 +70,7 @@ const Table: React.FC<ITable> = ({ data, columns }) => {
                             {table.getRowModel().rows.map((row) => {
                                 return (
                                     <tr
-                                        className="p-3 text-center"
+                                        className="p-3 text-center "
                                         key={row.id}
                                     >
                                         {row.getVisibleCells().map((cell) => {

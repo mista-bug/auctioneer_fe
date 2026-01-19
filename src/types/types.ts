@@ -1,4 +1,5 @@
 export interface IBid {
+    id:number;
     artwork: IArtwork;
     collection: ICollection;
     method: IBidMethod;
@@ -9,9 +10,12 @@ export interface IBid {
 export interface IUser {
     name: string;
     email: string;
-    contactNumber: string;
-    type: string;
+    contact_number: string;
+    type: IUserType;
     createdAt: string;
+    token:string|null;
+    bids:IBid[];
+    listings:IArtwork[];
 }
 
 export interface IArtwork {
@@ -24,11 +28,11 @@ export interface IArtwork {
     description: string;
     width: number;
     height: number;
-    medium: string;
+    medium: IMedium;
     imageUrl: string;
     acquisitionSource: string;
-    estimateLow: number;
-    estimateHigh: number;
+    estimate_low: number;
+    estimate_high: number;
     startingBid: number;
     reservePrice: number;
     lotNumber: number;
@@ -59,4 +63,11 @@ export interface ICategory {
 
 export interface IStatus {
     name: string;
+}
+
+export interface IUserType {
+    name:string;
+}
+export interface IMedium {
+    name:string;
 }

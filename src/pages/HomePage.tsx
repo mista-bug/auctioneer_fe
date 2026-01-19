@@ -18,19 +18,6 @@ interface IHomePage {
 const HomePage: React.FC<IHomePage> = () => {
 
     const navigate = useNavigate();
-
-    // const collectionsColumns = React.useMemo<ColumnDef<ICollection>[]>(
-    //     () => [
-    //       {
-    //         accessorFn: (row) => row.name,
-    //         id: 'name',
-    //         cell: (info) => info.getValue(),
-    //         header: 'Name',
-    //       },
-    //     ],
-    //     [],
-    // )
-
     const bidsColumns = React.useMemo<ColumnDef<IBid>[]>(
         () => [
           {
@@ -67,10 +54,24 @@ const HomePage: React.FC<IHomePage> = () => {
         setBids(bidResponse.data);
     },[]);
 
-    useEffect(() => {
-        getData();
-    },[]);
+    const hasAuth = () => {
+        const token = localStorage.getItem('token');
+        if(token != null) {
+            return true;
+        }
+        return false;
+    }
 
+    useEffect(() => {
+        if(hasAuth()){
+            getData();
+        } else {
+            navigate('/');
+        }
+        
+    },[]);
+    
+    
     return (
         <div className="h-screen w-full flex flex-col gap-3 overflow-y-auto p-3">
             <Card className="min-h-1/2 w-full p-3 flex flex-row items-center justify-center font-medium">
@@ -107,6 +108,12 @@ const HomePage: React.FC<IHomePage> = () => {
                 <div className="h-full w-1/2  flex flex-col p-1">
                     <header className="text-2xl text-neutral-300">Recent Bids</header>
                     <Table columns={bidsColumns} data={bids} />
+
+                    {/* {bids ? (
+                        <Table columns={bidsColumns} data={bids} />
+                    ) : (
+                        <div></div>
+                    )} */}
                 </div>
                 <div className="h-full w-1/2  flex flex-col p-2">
                     <header className="text-2xl text-neutral-300">Active Collections</header>

@@ -1,72 +1,127 @@
-import { Car, PersonFill } from "@gravity-ui/icons";
-import { Avatar, Card, DateField, DateInputGroup, Input, Label, TextField } from "@heroui/react";
+import { ArrowLeft, Brush, Car, PersonFill, TagDollar } from "@gravity-ui/icons";
+import { Avatar, Button, Card, DateField, DateInputGroup, Input, Label, TextField } from "@heroui/react";
 import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Table from "../components/Table";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useNavigate } from "react-router";
+import type { IArtwork, IBid, IUser } from "../types/types";
+import { API_URL } from "../config/config";
+import DefaultModal from "../components/ModalButton";
+import ModalButton from "../components/ModalButton";
 
-interface IProfilePage {
-
-}
-
-interface IUserData {
-    userId: number;
-    id: number;
-    title: string;
-    completed: boolean;
-}
+interface IProfilePage {}
 
 const ProfilePage:React.FC<IProfilePage> = () => {
 
-    const [data, setData] = useState<IUserData[]>([]);
+    const [user, setUser] = useState<IUser>();
+    const navigate = useNavigate();
 
-    const getBuys = useCallback(() => {
-        axios.get('https://jsonplaceholder.typicode.com/todos')
-        .then(response => setData(response.data));
-    },[])
+    const getUser = useCallback(async () => {
+        const response = await axios.get(API_URL + '/user');
+        setUser(response.data);
+    },[user]);
 
-    const bidColumns = useMemo<ColumnDef<any>[]>(
+    const bidColumns = useMemo<ColumnDef<IBid>[]>(
         () => [
             {
-                accessorKey: 'id',
-                header:'Id',
+                accessorFn: (row) => row?.artwork?.title,
+                id: 'title',
                 cell: (info) => info.getValue(),
-                // footer: (props) => props.column.id,
-              },
-              {
-                accessorFn: (row) => row.name,
-                id: 'name',
+                header: 'Title',
+            },
+            {
+                accessorFn: (row) => row?.artwork?.artist?.name,
+                id: 'artist',
                 cell: (info) => info.getValue(),
-                header: 'Name',
-                // footer: (props) => props.column.id,
-              },
+                header: 'Artist',
+            },
+            {
+                accessorFn: (row) => row?.artwork?.estimate_low ?? 0.00,
+                id: 'estimate_low',
+                cell: (info) => info.getValue(),
+                header: 'Estimate Low',
+            },
+            {
+                accessorFn: (row) => row?.artwork?.estimate_high ?? 0.00,
+                id: 'estimate_high',
+                cell: (info) => info.getValue(),
+                header: 'Estimate High',
+            },
+            {
+                accessorFn: (row) => row?.bid_amount ?? 0.00,
+                id: 'bid_amount',
+                cell: (info) => info.getValue(),
+                header: 'Bid Amount',
+            },
         ],
         []
     )
 
+    const listingColumns = useMemo<ColumnDef<IArtwork>[]>(
+        () => [
+            {
+                accessorFn: (row) => row.title ?? 'Untitled',
+                accessorKey: 'title',
+                header:'Title',
+                cell: (info) => info.getValue(),
+            },
+            {
+                accessorFn: (row) => row.category.name ?? 'N/A',
+                accessorKey: 'category',
+                header:'Category',
+                cell: (info) => info.getValue(),
+            },
+            {
+                accessorFn: (row) => row.reservePrice ?? 0.00,
+                accessorKey: 'reserve_price',
+                header:'Reserve Price',
+                cell: (info) => info.getValue(),
+            },
+            {
+                accessorFn: (row) => row.medium.name ?? 'N/A',
+                accessorKey: 'medium',
+                header:'Medium',
+                cell: (info) => info.getValue(),
+            },
+        ],
+        []
+    )
+
+    const hasAuth = () => {
+        const token = localStorage.getItem('token');
+        if(token != null) {
+            return true;
+        }
+        return false;
+    }
+
     useEffect(() => {
-        getBuys();
+        if ( ! hasAuth()) {
+            navigate('/');
+        }
+        getUser();
     },[])
 
     return (
         <div className="h-full w-full flex flex-row gap-3 p-3">
             <Card className="min-h-full w-1/4 p-3 flex items-center justify-center">
-                <section className="w-full h-full p-2 gap-3 flex flex-col items-center justify-center">
-                    <Avatar className="h-20 w-20"><PersonFill/></Avatar>
-                    <header className="text-4xl">User Name</header>
-                    <TextField className="w-full flex" name="email" type="email" isReadOnly>
-                        <Label>Email</Label>
-                        <Input readOnly value='email' />
-                    </TextField>
-                    <DateField className="w-full " name="date" isReadOnly>
-                        <Label>Joined At</Label>
-                        <DateInputGroup>
-                            <DateInputGroup.Input>
-                                {(segment) => <DateInputGroup.Segment segment={segment} />}
-                            </DateInputGroup.Input>
-                        </DateInputGroup>
-                    </DateField>
-    
+                <section className="w-full h-full p-2 gap-1 flex flex-col items-center justify-evenly ">
+                    <div className="flex flex-col gap-3 outline p-10 outline-neutral-800 rounded-2xl bg-background-quaternary">
+                        <div className="flex flex-col items-center">
+                            <Avatar className="h-20 w-20"><PersonFill/></Avatar>
+                            <header className="text-4xl">{ user?.name ?? 'User Name'}</header>
+                            <p className="text-sm text-neutral-600">{ user?.type?.name ?? 'User Type'}</p>
+                            <p className="text-sm text-neutral-600">{ user?.email ?? 'User Email'}</p>
+                            <p className="text-sm text-neutral-600">{ user?.contact_number ?? 'User Contact'}</p>
+                        </div>
+                        <div className="flex flex-col w-full h-full gap-2">
+                            <ModalButton triggerLabel="List" icon={<Brush />} description="List">
+                                <form action=""></form>
+                            </ModalButton>
+                        </div>
+                    <Button className='w-full p-3 text-md' variant="danger-soft"><ArrowLeft/> Logout</Button>
+                    </div>
                 </section>
             </Card>
 
@@ -86,10 +141,11 @@ const ProfilePage:React.FC<IProfilePage> = () => {
                 <Card className="h-full w-full flex flex-row">
                     <div className="h-full w-full">
                         <header className="text-xl">Bids</header>
-                        <Table columns={bidColumns} data={data} />
+                        <Table columns={bidColumns} data={user?.bids ?? []} />
                     </div>
                     <div className="h-full w-full">
                         <header className="text-xl">Listings</header>
+                        <Table columns={listingColumns} data={user?.listings ?? []} />
                     </div>
                 </Card>
             </div>

@@ -2,6 +2,8 @@ import { Button, Card, Form, Label, Input, Description, FieldError, TextField, H
 import { Check } from "@gravity-ui/icons";
 import axios from "axios";
 import { API_URL } from "../config/config";
+import { useNavigate } from "react-router";
+import { useEffect } from "react";
 
 interface ILoginPage {
 
@@ -9,6 +11,7 @@ interface ILoginPage {
 
 const LoginPage: React.FC<ILoginPage> = () => {
 
+    const navigate = useNavigate();
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -16,14 +19,25 @@ const LoginPage: React.FC<ILoginPage> = () => {
         formData.forEach((value, key) => {
             data[key] = value.toString();
         });
-        
+
         try {
-            const response = await axios.post(API_URL + '/user', data);
-            console.log('Success:', response.data);
+            const response = await axios.post(API_URL + '/login', data);
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+            console.log(axios.defaults.headers.common['Authorization']);
+            navigate('/home');
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Invalid Credentials');
         }
     };
+
+    useEffect(() => {
+        //check
+        if (localStorage.getItem('token')) {
+            navigate('/home');
+        }
+    }, [])
 
     return (
         <div className="h-full w-full flex flex-col items-center justify-center">
