@@ -1,7 +1,7 @@
-import { ArrowLeft, Brush, Car, PersonFill, TagDollar } from "@gravity-ui/icons";
+import { ArrowDown, ArrowLeft, ArrowUp, Brush, Car, Eye, LifeRing, Minus, Pencil, PersonFill, Plus, TagDollar, TrashBin } from "@gravity-ui/icons";
 import { Avatar, Button, Card, DateField, DateInputGroup, Input, Label, TextField } from "@heroui/react";
 import axios from "axios";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Table from "../components/Table";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useNavigate } from "react-router";
@@ -9,6 +9,13 @@ import type { IArtwork, IBid, IUser } from "../types/types";
 import { API_URL } from "../config/config";
 import DefaultModal from "../components/ModalButton";
 import ModalButton from "../components/ModalButton";
+import AddBidForm from "../forms/AddBidForm";
+import AlertButton from "../components/AlertButton";
+import EditArtworkForm from "../forms/NewArtworkForm";
+import NewArtworkForm from "../forms/NewArtworkForm";
+import EditArtWorkForm from "../forms/EditArtworkForm";
+import { getFormData, getLocalUserData } from "../utils/misc";
+import AddBidFormFull from "../forms/AddBidFormFull";
 
 interface IProfilePage {}
 
@@ -21,6 +28,68 @@ const ProfilePage:React.FC<IProfilePage> = () => {
         const response = await axios.get(API_URL + '/user');
         setUser(response.data);
     },[user]);
+
+    const logout = async () => {
+        try {
+            const response = await axios.post(API_URL + '/logout');
+            console.log('Successful logout');
+          } catch (error) {
+            console.log('Unsuccessful logout.');
+          } finally {
+            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            delete axios.defaults.headers.common['Authorization'];
+            navigate('/');
+          }
+    }
+
+    const deleteBid = (id:number) => {
+        try {
+            axios.delete(API_URL + `/bids/${id}`);
+            console.log('Success!');
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const deleteArtwork = (id:number) => {
+        try {
+            axios.delete(API_URL + `/artworks/${id}`);
+            console.log('Success!');
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const editArtwork = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = getFormData(e);
+        console.log(formData);
+        try {
+            const response = await axios.put(API_URL + '/artworks',formData);
+            console.log('Success!');
+            const artwork :IArtwork = response.data.data;
+            navigate(`/artwork/${artwork.id}`);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const submitNewArtwork = async (e:React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = getFormData(e);
+        console.log(formData);
+        
+        try {
+            const response = await axios.post(API_URL + '/artworks',formData);
+            const artwork : IArtwork = response.data.data;
+            navigate(`/artwork/${artwork.id}`);
+            console.log('Success!');
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     const bidColumns = useMemo<ColumnDef<IBid>[]>(
         () => [
@@ -37,22 +106,31 @@ const ProfilePage:React.FC<IProfilePage> = () => {
                 header: 'Artist',
             },
             {
-                accessorFn: (row) => row?.artwork?.estimate_low ?? 0.00,
-                id: 'estimate_low',
-                cell: (info) => info.getValue(),
-                header: 'Estimate Low',
+                id:'estimate',
+                header:'Estimate',
+                cell: (info) => (
+                    <div className="flex flex-col">
+                        <div className="flex flex-row items-center text-emerald-500"> <ArrowUp/> {info.row.original.artwork.estimate_high}</div>
+                        <div className="flex flex-row items-center text-neutral-500 opacity-50"> <ArrowDown/> {info.row.original.artwork.estimate_low}</div>
+                    </div>
+                )
             },
             {
-                accessorFn: (row) => row?.artwork?.estimate_high ?? 0.00,
-                id: 'estimate_high',
-                cell: (info) => info.getValue(),
-                header: 'Estimate High',
+                id:'amount',
+                header:'Amount',
+                accessorFn: (row) => row?.bid_amount,
+                cell: (info) => 'PHP ' + info.getValue()
             },
             {
                 accessorFn: (row) => row?.bid_amount ?? 0.00,
-                id: 'bid_amount',
-                cell: (info) => info.getValue(),
-                header: 'Bid Amount',
+                id: 'action',
+                cell: (info) => (
+                    <div className="flex flex-row gap-2">
+                        <AlertButton id={info.row.original.id} onConfirm={deleteBid} body={`Are you sure you want to delete the ${info.row.original.artwork.title} bid? ( PHP ${info.row.original.bid_amount})`} variant="danger-soft" status="primary" icon={<TrashBin/>} key={info.row.original.id}/>
+                        <Button variant="secondary" onClick={() => {navigate(`/artwork/${info.row.original.artwork.id}`)}}><Eye/></Button>
+                    </div>
+                ),
+                header: '',
             },
         ],
         []
@@ -73,17 +151,17 @@ const ProfilePage:React.FC<IProfilePage> = () => {
                 cell: (info) => info.getValue(),
             },
             {
-                accessorFn: (row) => row.reservePrice ?? 0.00,
-                accessorKey: 'reserve_price',
-                header:'Reserve Price',
-                cell: (info) => info.getValue(),
+                accessorKey: 'action',
+                header:'',
+                cell: (info) => (
+                    <div className="flex flex-row gap-2 justify-center">
+                        <ModalButton triggerLabel="" heading="Edit Listing" size="md" icon={<Pencil/>}><EditArtWorkForm artworkId={info.row.original.id} artistId={getLocalUserData()?.id} onSubmit={editArtwork}/></ModalButton>
+                        <Button onClick={() => { navigate(`/artwork/${info.row.original.id}`)}} variant="secondary"><Eye/></Button>
+                        <AlertButton id={info.row.original.id} onConfirm={deleteArtwork} body={`Are you sure you want to delete the listing?`} variant="danger-soft" status="primary" icon={<TrashBin/>} key={info.row.original.id}/>
+                    </div>
+                ),
             },
-            {
-                accessorFn: (row) => row.medium.name ?? 'N/A',
-                accessorKey: 'medium',
-                header:'Medium',
-                cell: (info) => info.getValue(),
-            },
+            
         ],
         []
     )
@@ -116,11 +194,9 @@ const ProfilePage:React.FC<IProfilePage> = () => {
                             <p className="text-sm text-neutral-600">{ user?.contact_number ?? 'User Contact'}</p>
                         </div>
                         <div className="flex flex-col w-full h-full gap-2">
-                            <ModalButton triggerLabel="List" icon={<Brush />} description="List">
-                                <form action=""></form>
-                            </ModalButton>
+                            
                         </div>
-                    <Button className='w-full p-3 text-md' variant="danger-soft"><ArrowLeft/> Logout</Button>
+                    <Button onClick={logout} className='w-full p-3 text-md' variant="danger-soft"><ArrowLeft/> Logout</Button>
                     </div>
                 </section>
             </Card>
@@ -128,23 +204,26 @@ const ProfilePage:React.FC<IProfilePage> = () => {
             <div className="h-full w-full flex flex-col gap-3">
                 <div className="h-1/4 flex flex-row gap-3">
                     <Card className="h-full w-full">
-                        <header className="text-xl">Buy Info</header>
-                        <header className="text-md text-neutral-500">Total Buy Offers</header>
-                        <header className="text-md text-neutral-500">Latest Buy Offer</header>
+                        <header className="text-xl">Total Bid Orders</header>
+                        <header className="text-7xl text-right text-neutral-500">{user?.bids?.length ?? 0}</header>
                     </Card>
                     <Card className="h-full w-full">
-                        <header className="text-xl">Sell Info</header>
-                        <header className="text-md text-neutral-500">Total Listed </header>
-                        <header className="text-md"></header>
+                        <header className="text-xl">Total Listed</header>
+                        <header className="text-7xl text-right text-neutral-500">{user?.listings?.length ?? 0} </header>
                     </Card>
                 </div>
                 <Card className="h-full w-full flex flex-row">
-                    <div className="h-full w-full">
-                        <header className="text-xl">Bids</header>
+                    <div className="h-full w-full flex flex-col gap-3">
+                        <div className="flex flex-row justify-between items-center">
+                            <p className="text-xl">Bids</p>
+                        </div>
                         <Table columns={bidColumns} data={user?.bids ?? []} />
                     </div>
-                    <div className="h-full w-full">
-                        <header className="text-xl">Listings</header>
+                    <div className="h-full w-full flex flex-col gap-3">
+                        <div className="flex flex-row justify-between items-center">
+                            <p className="text-xl">Listings</p>
+                            <ModalButton icon={<Plus/>} heading="New Listing" triggerLabel="List"> <NewArtworkForm onSubmit={submitNewArtwork}/> </ModalButton>
+                        </div>
                         <Table columns={listingColumns} data={user?.listings ?? []} />
                     </div>
                 </Card>

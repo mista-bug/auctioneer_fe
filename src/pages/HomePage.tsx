@@ -80,10 +80,10 @@ const HomePage: React.FC<IHomePage> = () => {
                         <header className="text-4xl">Auctions Page</header>
                         <p className="text-md font-light text-neutral-400 italic">See all new auctions available.</p>
                     </div>
-                    <div className="flex flex-row gap-3">
+                    {/* <div className="flex flex-row gap-3">
                         <Button className='bg-emerald-600'><TagDollar/>Bid</Button>
                         <Button variant="secondary"><Brush/> List</Button>
-                    </div>
+                    </div> */}
                 </section>
 
                 <section className=" border-l border-l-neutral-700 p-10 h-full w-1/2 gap-3 flex flex-col justify-center">

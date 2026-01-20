@@ -2,6 +2,7 @@ import { Button, Card, Form, Label, Input, Description, FieldError, TextField, H
 import { Check } from "@gravity-ui/icons";
 import { API_URL } from "../config/config";
 import axios from "axios";
+import { useNavigate } from "react-router";
 
 interface IRegisterPage {
 
@@ -9,6 +10,7 @@ interface IRegisterPage {
 
 const RegisterPage: React.FC<IRegisterPage> = () => {
 
+    const navigate = useNavigate();
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -21,6 +23,7 @@ const RegisterPage: React.FC<IRegisterPage> = () => {
         try {
             const response = await axios.post(API_URL + '/user', data);
             console.log('Success:', response.data);
+            navigate('/');
         } catch (error) {
             console.error('Error:', error);
         }

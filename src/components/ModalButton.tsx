@@ -1,5 +1,5 @@
-import { Button, Modal } from "@heroui/react"
-import React from "react"
+import { Button, Modal, useOverlayState } from "@heroui/react"
+import React, { useState } from "react"
 
 interface IModalButton {
   triggerLabel?: string;
@@ -11,6 +11,9 @@ interface IModalButton {
   footer?: React.ReactNode;
   maxWidth?: string;
   placement?: "auto" | "center" | "top" | "bottom";
+  size?:"xs" | "sm" | "md" | "lg" | "cover" | "full" | undefined;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const ModalButton: React.FC<IModalButton> = ({
@@ -20,14 +23,17 @@ const ModalButton: React.FC<IModalButton> = ({
   description,
   children,
   footer,
-  maxWidth = "sm:max-w-md",
-  placement = "auto"
+  maxWidth = "w-full",
+  placement = "auto",
+  isOpen,
+  size = 'cover',
+  onOpenChange
 }) => {
   return (
     <Modal>
-      <Button className='w-full' variant='secondary' >{icon} {triggerLabel}</Button>
-      <Modal.Backdrop>
-        <Modal.Container placement={placement}>
+      <Button className='' variant='secondary'>{icon} {triggerLabel}</Button>
+      <Modal.Backdrop isOpen={isOpen} onOpenChange={onOpenChange}>
+        <Modal.Container size={size} placement={placement}>
           <Modal.Dialog className={maxWidth}>
             <Modal.CloseTrigger />
             {(heading || description || icon) && (
