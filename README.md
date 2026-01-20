@@ -17,3 +17,6 @@ This uses :
 6. Vite.
 # Security and Testing
 Ive used trycatches, basic error handling and Hero UI validation. Alot of CRUD actions are safely handled in the backend.
+
+Backend URL : 
+https://github.com/mista-bug/auctioneer_be
