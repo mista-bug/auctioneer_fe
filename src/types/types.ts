@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export interface IBid {
     id:number;
     artwork: IArtwork;
@@ -8,6 +10,7 @@ export interface IBid {
 }
 
 export interface IUser {
+    id: number;
     name: string;
     email: string;
     contact_number: string;
@@ -20,6 +23,7 @@ export interface IUser {
 
 export interface IArtwork {
     id: number;
+    collection_id:number;
     artist: IUser;
     category: ICategory;
     owner: IUser;
@@ -39,6 +43,22 @@ export interface IArtwork {
     artworkCreatedAt: string;
     createdAt: string;
     bids:IBid[];
+    collection:ICollection;
+    provenance:IProvenanceRecord[];
+}
+
+export interface IProvenanceRecord {
+    artwork_id:number;
+    collection_id:number;
+    user_id:number;
+    acquisition_date:string;
+    sale_price:number;
+    acquisition_method_id:number;
+    transfer_date:string;
+    sale_location:string;
+    sale_address:string;
+    owner_number:number;
+    owner:IUser;
 }
 
 export interface ICollection {
@@ -58,6 +78,7 @@ export interface IBidMethod {
 }
 
 export interface ICategory {
+    id:number;
     name: string;
 }
 
@@ -69,5 +90,31 @@ export interface IUserType {
     name:string;
 }
 export interface IMedium {
+    id:number;
     name:string;
+}
+
+export interface IDefaultFormHandling {
+    onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}
+
+export interface IAlertButton {
+    body:string;
+    label?:string;
+    id:number;
+    icon:ReactNode;
+    status:string;
+    variant:"primary" | "secondary" | "tertiary" | "ghost" | "danger" | "danger-soft" | undefined;
+    onConfirm:(id:number) => void;
+    // onClose:() => void
+}
+export interface IDropdownPickerProps {
+    name:string;
+    data?:any[];
+    onChange?: () => void;
+}
+
+export interface IDropdownPickerChoice {
+    id:string;
+    textValue:string;
 }
